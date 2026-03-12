@@ -14,3 +14,8 @@ variable "env" {
   type        = string
   default     = "dev"
 }
+
+variable "ec2_ami_id" {
+  description = "EC2のAMI ID"
+  type        = string
+}
