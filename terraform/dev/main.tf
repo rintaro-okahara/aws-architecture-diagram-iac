@@ -12,3 +12,9 @@ terraform {
 provider "aws" {
   region = var.aws_region
 }
+
+module "network" {
+  source  = "../modules/network"
+  project = var.project
+  env     = var.env
+}
