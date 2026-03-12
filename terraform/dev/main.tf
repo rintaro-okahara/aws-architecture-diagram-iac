@@ -28,3 +28,15 @@ module "compute" {
   private_subnet_ids = module.network.private_subnet_ids
   ec2_ami_id         = var.ec2_ami_id
 }
+
+module "database" {
+  source                = "../modules/database"
+  project               = var.project
+  env                   = var.env
+  vpc_id                = module.network.vpc_id
+  db_subnet_ids         = module.network.db_subnet_ids
+  ec2_security_group_id = module.compute.ec2_security_group_id
+  db_name               = var.db_name
+  db_username           = var.db_username
+  db_password           = var.db_password
+}
