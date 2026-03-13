@@ -34,3 +34,9 @@ variable "availability_zones" {
   type        = list(string)
   default     = ["ap-northeast-1a", "ap-northeast-1c"]
 }
+
+variable "enable_multi_az_nat" {
+  description = "trueの場合、各AZにNAT Gatewayを配置してMulti-AZ構成にする（falseはAZ-aのみ、コスト削減）"
+  type        = bool
+  default     = true
+}
