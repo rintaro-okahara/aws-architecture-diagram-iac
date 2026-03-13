@@ -41,3 +41,29 @@ module "database" {
   db_username           = var.db_username
   db_password           = var.db_password
 }
+
+resource "aws_resourcegroups_group" "main" {
+  name = "${var.project}-${var.env}-rg"
+
+  resource_query {
+    query = jsonencode({
+      ResourceTypeFilters = ["AWS::AllSupported"]
+      TagFilters = [
+        {
+          Key    = "Project"
+          Values = [var.project]
+        },
+        {
+          Key    = "Env"
+          Values = [var.env]
+        }
+      ]
+    })
+  }
+
+  tags = {
+    Name    = "${var.project}-${var.env}-rg"
+    Project = var.project
+    Env     = var.env
+  }
+}

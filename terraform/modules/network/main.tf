@@ -1,5 +1,9 @@
 locals {
   name_prefix = "${var.project}-${var.env}"
+  common_tags = {
+    Project = var.project
+    Env     = var.env
+  }
 }
 
 # VPC
@@ -8,18 +12,18 @@ resource "aws_vpc" "main" {
   enable_dns_support   = true
   enable_dns_hostnames = true
 
-  tags = {
+  tags = merge(local.common_tags, {
     Name = "${local.name_prefix}-vpc"
-  }
+  })
 }
 
 # Internet Gateway
 resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
 
-  tags = {
+  tags = merge(local.common_tags, {
     Name = "${local.name_prefix}-igw"
-  }
+  })
 }
 
 # Public Subnets (AZ-a, AZ-b)
@@ -30,10 +34,10 @@ resource "aws_subnet" "public" {
   availability_zone       = var.availability_zones[count.index]
   map_public_ip_on_launch = true
 
-  tags = {
+  tags = merge(local.common_tags, {
     Name = "${local.name_prefix}-public-subnet-${count.index + 1}"
     Type = "Public"
-  }
+  })
 }
 
 # Private Subnets (AZ-a, AZ-b)
@@ -43,10 +47,10 @@ resource "aws_subnet" "private" {
   cidr_block        = var.private_subnet_cidrs[count.index]
   availability_zone = var.availability_zones[count.index]
 
-  tags = {
+  tags = merge(local.common_tags, {
     Name = "${local.name_prefix}-private-subnet-${count.index + 1}"
     Type = "Private"
-  }
+  })
 }
 
 # DB Subnets (AZ-a, AZ-b)
@@ -56,19 +60,19 @@ resource "aws_subnet" "db" {
   cidr_block        = var.db_subnet_cidrs[count.index]
   availability_zone = var.availability_zones[count.index]
 
-  tags = {
+  tags = merge(local.common_tags, {
     Name = "${local.name_prefix}-db-subnet-${count.index + 1}"
     Type = "DB"
-  }
+  })
 }
 
 # EIP for NAT Gateway
 resource "aws_eip" "nat" {
   domain = "vpc"
 
-  tags = {
+  tags = merge(local.common_tags, {
     Name = "${local.name_prefix}-nat-eip"
-  }
+  })
 }
 
 # NAT Gateway (AZ-a の Public Subnet に配置)
@@ -76,9 +80,9 @@ resource "aws_nat_gateway" "main" {
   allocation_id = aws_eip.nat.id
   subnet_id     = aws_subnet.public[0].id
 
-  tags = {
+  tags = merge(local.common_tags, {
     Name = "${local.name_prefix}-nat"
-  }
+  })
 
   depends_on = [aws_internet_gateway.main]
 }
@@ -92,9 +96,9 @@ resource "aws_route_table" "public" {
     gateway_id = aws_internet_gateway.main.id
   }
 
-  tags = {
+  tags = merge(local.common_tags, {
     Name = "${local.name_prefix}-public-rt"
-  }
+  })
 }
 
 # Route Table: Private (NAT経由)
@@ -106,18 +110,18 @@ resource "aws_route_table" "private" {
     nat_gateway_id = aws_nat_gateway.main.id
   }
 
-  tags = {
+  tags = merge(local.common_tags, {
     Name = "${local.name_prefix}-private-rt"
-  }
+  })
 }
 
 # Route Table: DB (外部ルートなし)
 resource "aws_route_table" "db" {
   vpc_id = aws_vpc.main.id
 
-  tags = {
+  tags = merge(local.common_tags, {
     Name = "${local.name_prefix}-db-rt"
-  }
+  })
 }
 
 # Route Table Associations

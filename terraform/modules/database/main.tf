@@ -1,5 +1,9 @@
 locals {
   name_prefix = "${var.project}-${var.env}"
+  common_tags = {
+    Project = var.project
+    Env     = var.env
+  }
 }
 
 # Security Group: RDS
@@ -22,9 +26,9 @@ resource "aws_security_group" "rds" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = {
+  tags = merge(local.common_tags, {
     Name = "${local.name_prefix}-rds-sg"
-  }
+  })
 }
 
 # DB Subnet Group
@@ -32,9 +36,9 @@ resource "aws_db_subnet_group" "main" {
   name       = "${local.name_prefix}-db-subnet-group"
   subnet_ids = var.db_subnet_ids
 
-  tags = {
+  tags = merge(local.common_tags, {
     Name = "${local.name_prefix}-db-subnet-group"
-  }
+  })
 }
 
 # RDS Instance (PostgreSQL, Multi-AZ)
@@ -54,7 +58,7 @@ resource "aws_db_instance" "main" {
   skip_final_snapshot    = true
   publicly_accessible    = false
 
-  tags = {
+  tags = merge(local.common_tags, {
     Name = "${local.name_prefix}-rds"
-  }
+  })
 }

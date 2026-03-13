@@ -1,5 +1,9 @@
 locals {
   name_prefix = "${var.project}-${var.env}"
+  common_tags = {
+    Project = var.project
+    Env     = var.env
+  }
 }
 
 # Security Group: ALB
@@ -22,9 +26,9 @@ resource "aws_security_group" "alb" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = {
+  tags = merge(local.common_tags, {
     Name = "${local.name_prefix}-alb-sg"
-  }
+  })
 }
 
 # Security Group: EC2
@@ -47,9 +51,9 @@ resource "aws_security_group" "ec2" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = {
+  tags = merge(local.common_tags, {
     Name = "${local.name_prefix}-ec2-sg"
-  }
+  })
 }
 
 # ALB
@@ -62,9 +66,9 @@ resource "aws_lb" "main" {
 
   enable_deletion_protection = false
 
-  tags = {
+  tags = merge(local.common_tags, {
     Name = "${local.name_prefix}-alb"
-  }
+  })
 }
 
 # Target Group
@@ -81,9 +85,9 @@ resource "aws_lb_target_group" "main" {
     interval            = 30
   }
 
-  tags = {
+  tags = merge(local.common_tags, {
     Name = "${local.name_prefix}-tg"
-  }
+  })
 }
 
 # Listener: HTTP 80
@@ -107,9 +111,9 @@ resource "aws_instance" "app" {
 
   vpc_security_group_ids = [aws_security_group.ec2.id]
 
-  tags = {
+  tags = merge(local.common_tags, {
     Name = "${local.name_prefix}-app-${count.index + 1}"
-  }
+  })
 }
 
 # Target Group Attachment
