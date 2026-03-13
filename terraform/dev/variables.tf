@@ -4,6 +4,11 @@ variable "aws_region" {
   default     = "ap-northeast-1"
 }
 
+variable "aws_profile" {
+  description = "AWS CLIプロファイル名"
+  type        = string
+}
+
 variable "project" {
   description = "プロジェクト名（タグ・命名に使用）"
   type        = string
